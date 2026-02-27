@@ -51,3 +51,11 @@ manpages/
 completions/crush.*sh
 .prettierignore
 .task
+
+# OpenMemory - IDE/Assistant specific rules
+.cursor/rules/openmemory.mdc
+
+# Aider reference source (downloaded for repomap adaptation)
+aider-main/
+aider-main.zip
+openmemory.md
