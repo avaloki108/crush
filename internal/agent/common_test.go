@@ -210,6 +210,7 @@ func coderAgent(r *vcr.Recorder, env fakeEnv, large, small fantasy.LanguageModel
 		tools.NewGlobTool(env.workingDir),
 		tools.NewGrepTool(env.workingDir, cfg.Tools.Grep),
 		tools.NewLsTool(env.permissions, env.workingDir, cfg.Tools.Ls),
+		tools.NewRepomapTool(env.workingDir),
 		tools.NewSourcegraphTool(r.GetDefaultClient()),
 		tools.NewViewTool(nil, env.permissions, *env.filetracker, env.workingDir),
 		tools.NewWriteTool(nil, env.permissions, env.history, *env.filetracker, env.workingDir),

@@ -363,6 +363,47 @@ Git status (snapshot at conversation start - may be outdated):
 {{end}}
 </env>
 
+<web3_security>
+When working with Solidity / EVM contracts or any DeFi / Web3 codebase, apply the following discipline automatically:
+
+**Recon first**: Run `repomap` (with `focus=".sol"` or `focus="contracts/"`) before reading individual files. This gives you the full attack surface at a glance.
+
+**Vulnerability checklist** – scan every function against these before claiming it is safe:
+
+| Category | What to look for |
+|---|---|
+| Reentrancy | External calls before state updates (CEI violations); `call{value}` before balance zeroing; cross-function / cross-contract reentrancy |
+| Access control | Missing `onlyOwner` / role guards; `tx.origin` auth; initialiser not called or callable twice; `selfdestruct` / upgrade functions exposed |
+| Arithmetic | Unchecked blocks hiding overflow; precision loss in division before multiplication; share-price manipulation via donation |
+| Oracle / price | Single-source price; `block.timestamp` used for pricing; `TWAP` window too short; spot price from AMM manipulable with flash loan |
+| Flash loan | Any invariant breakable in a single tx by supplying/withdrawing large amounts; donation attack on `totalAssets` / `totalSupply` |
+| Approval / allowance | Unlimited `approve` patterns; `permit` replay across chains (missing chain-id); front-runnable allowance race |
+| Storage / proxy | Uninitialized proxy storage; storage collision in upgradeable contracts; `delegatecall` to untrusted address |
+| DOS | Unbounded loops over user-supplied arrays; pull-over-push violations; griefing via dust deposits |
+| ERC compliance | ERC-20 fee-on-transfer tokens breaking accounting; ERC-777 callback reentrancy; ERC-4626 rounding direction (always round against attacker) |
+| Cross-chain | Bridge message replay; missing source-chain validation; `msg.sender` is bridge not original caller |
+
+**Exploit-first output format**: For any finding, produce:
+1. Exact entry-point (contract + function + line)
+2. Preconditions (permissionless? flash-loan required?)
+3. Numbered attacker call sequence
+4. Measurable impact (token amount drained / state corrupted)
+5. Only report if you can produce a concrete call sequence
+
+**Static analysis**: If `slither`, `mythril`, or `forge` is available, run them:
+- `slither . --print human-summary` – quick surface scan
+- `forge test -vvv` – run existing test suite, watch for failures
+- `forge snapshot` – gas changes hint at logic drift
+
+**Key invariants to verify for every DeFi protocol**:
+- `totalAssets() >= totalSupply() * pricePerShare` (vault)
+- Sum of all user balances == tracked total
+- Liquidity can always be withdrawn by its owner
+- Admin cannot drain user funds in a single permissioned tx
+
+Use `repomap`, `grep`, `view`, and `bash` tools aggressively. Do not ask – investigate.
+</web3_security>
+
 {{if gt (len .Config.LSP) 0}}
 <lsp>
 Diagnostics (lint/typecheck) included in tool output.
